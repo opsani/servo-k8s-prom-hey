@@ -10,8 +10,8 @@ RUN pip3 install requests PyYAML python-dateutil
 
 RUN mkdir -p measure.d
 
-ADD https://raw.githubusercontent.com/ak08743/servo-prom/master/measure measure.d/measure-prom
-ADD https://raw.githubusercontent.com/ak08743/servo-hey/master/measure measure.d/measure-hey
+ADD https://raw.githubusercontent.com/opsani/servo-prom/master/measure measure.d/measure-prom
+ADD https://raw.githubusercontent.com/opsani/servo-hey/master/measure measure.d/measure-hey
 ADD https://raw.githubusercontent.com/opsani/servo/master/measure.py measure.d/
 ADD https://storage.googleapis.com/hey-release/hey_linux_amd64 /usr/local/bin/hey
 

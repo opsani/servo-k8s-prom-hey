@@ -8,24 +8,39 @@ ADD  https://storage.googleapis.com/kubernetes-release/release/v1.16.2/bin/linux
 RUN apt update && apt -y install procps tcpdump curl wget
 RUN pip3 install requests PyYAML python-dateutil
 
-RUN mkdir -p measure.d
+# add prom driver
+ADD https://raw.githubusercontent.com/opsani/servo-prom/master/measure /servo/measure.d/prom-opsani
+ADD https://raw.githubusercontent.com/opsani/servo-prom/master/measure /servo/measure.d/prom-ethos
 
-ADD https://raw.githubusercontent.com/opsani/servo-prom/master/measure measure.d/measure-prom
-ADD https://raw.githubusercontent.com/opsani/servo-hey/master/measure measure.d/measure-hey
+# add magg driver
+RUN mkdir -p measure.d
+ADD https://raw.githubusercontent.com/opsani/servo-magg/master/measure /servo/
 ADD https://raw.githubusercontent.com/opsani/servo/master/measure.py measure.d/
-ADD https://storage.googleapis.com/hey-release/hey_linux_amd64 /usr/local/bin/hey
+
+# add agg driver
+RUN mkdir -p adjust.d
+ADD https://raw.githubusercontent.com/opsani/servo-agg/demo/adjust \
+    https://raw.githubusercontent.com/opsani/servo-agg/demo/adjust.py \
+    https://raw.githubusercontent.com/opsani/servo-agg/demo/util.py \
+    /servo/
+
+# add k8s driver under different names
+ADD https://raw.githubusercontent.com/opsani/servo/master/adjust.py  /servo/adjust.d/
+ADD https://raw.githubusercontent.com/opsani/servo-k8s/master/adjust /servo/adjust.d/k8s-adjust-canary
+ADD https://raw.githubusercontent.com/opsani/servo-k8s/master/adjust /servo/adjust.d/k8s-adjust-main
+
 
 # Install servo
 ADD https://raw.githubusercontent.com/opsani/servo/master/servo \
-    https://raw.githubusercontent.com/opsani/servo/master/adjust.py \
     https://raw.githubusercontent.com/opsani/servo/master/measure.py \
-    https://raw.githubusercontent.com/opsani/servo-k8s/master/adjust \
-    https://raw.githubusercontent.com/opsani/servo-magg/master/measure \
     /servo/
 
-RUN chmod a+rwx /servo/adjust /servo/measure /servo/servo /usr/local/bin/kubectl /usr/local/bin/hey
-RUN chmod a+r /servo/adjust.py /servo/measure.py measure.d/measure.py
-RUN chmod a+rwx /servo/measure.d/measure-prom /servo/measure.d/measure-hey
+RUN chmod a+rwx /servo/adjust /servo/measure /servo/servo /usr/local/bin/kubectl
+RUN chmod a+rwx /servo/measure.d/prom-opsani /servo/measure.d/prom-ethos
+RUN chmod a+r /servo/adjust.py /servo/measure.py
+RUN chmod a+rx /servo/adjust.d/k8s-adjust-canary
+RUN chmod a+rx /servo/adjust.d/k8s-adjust-main
+RUN chmod 644  /servo/adjust.d/adjust.py
 
 ENV PYTHONUNBUFFERED=1
 
